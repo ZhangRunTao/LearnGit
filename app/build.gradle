@@ -1,0 +1,150 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    defaultConfig {
+        applicationId "framework.fastdevelop.com.newversionframework"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    signingConfigs {
+        //TODO 更新你的keyStore信息
+        config {
+            keyAlias 'app'
+            keyPassword '123456'
+            storeFile file(rootProject.projectDir.absolutePath + File.separator + "app.jks")
+            storePassword '123456'
+        }
+    }
+    //TODO 更新你的构建类型信息
+    buildTypes {
+        debug {
+            applicationIdSuffix "framework.fastdevelop.com.newversionframework.debug"
+            manifestPlaceholders = [
+                    "url"    : "www.baidu.com is debug",
+                    "appName": "debug"
+            ]
+        }
+        //sit环境
+        sit {
+            debuggable true
+            applicationIdSuffix "framework.fastdevelop.com.newversionframework.sit"
+            manifestPlaceholders = [
+                    "url"    : "www.baidu.com is sit",
+                    "appName": "sit"
+            ]
+            signingConfig signingConfigs.config
+        }
+        //生产环境
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            manifestPlaceholders = [
+                    "url"    : "www.google.com is release",
+                    "appName": "release"
+            ]
+            signingConfig signingConfigs.config
+        }
+    }
+    sourceSets{
+        main{
+            res.srcDirs = [
+                    "src/main/res",
+                    "src/main/res-other",
+                    "src/main/res-other/login",
+            ]
+            res.srcDirs.each {file->
+                if(!file.exists()){
+                    file.mkdirs()
+                    if(!file.absolutePath.endsWith("res-other")){
+                        copy{
+                            from 'src/main/res'
+                            into file.absolutePath
+                            exclude '**/**.xml','**/**.png','values','values-w820dp','mipmap-mdpi','mipmap-xxxhdpi'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+task copyReleaseTask<<{
+    copyReleaseRequiredFiles true
+}
+task copyUndoTask<<{
+    copyReleaseRequiredFiles false
+}
+tasks.whenTaskAdded {task->
+    switch (task.name){
+        case "assembleRelease":
+            task.dependsOn copyReleaseTask
+            break;
+        case "assembleDebug":
+            task.dependsOn copyUndoTask
+            break;
+    }
+}
+
+def copyReleaseRequiredFiles(isRelease){
+    def appLibrary = findProject(":appLibrary")
+    def fromPath = isRelease ? rootProject.ext.RELEASE_REQUIRED_FILES_PATH : rootProject.ext.UNDO_RELEASE_FILES_PATH
+    def intoPath = appLibrary.projectDir.absolutePath + File.separator + "libs"
+
+    if(isRelease){
+        delete(intoPath + File.separator + "undo-release.txt")
+    }else{
+        delete(intoPath + File.separator + "copy-release.txt")
+    }
+
+    copy{
+        from fromPath
+        into intoPath
+    }
+}
+
+def method(closure){
+    println closure instanceof Closure
+    (1..10).each {
+        closure(it)
+    }
+}
+def methodExt(range,closure){
+    range.each{
+        closure(it,"zrt",18)
+    }
+}
+for(int i = 0;i<10;i++){
+    println ">>$i"
+}
+def list = [1,2,3]
+for(l in list){
+    println l
+}
+//method({i->
+//    println i
+//})
+//methodExt(1..5,{i->
+//    println i
+//})
+//methodExt(1..5){i->
+//    println i
+//}
+methodExt(1..5,{i,name,age->
+    println "$i>>$name>>$age"
+})
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    //    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    //        exclude group: 'com.android.support', module: 'support-annotations'
+    //    })
+    //    testCompile 'junit:junit:4.12'
+    compile project(':appLibrary')
+    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:design:25.0.1'
+}

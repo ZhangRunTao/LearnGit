@@ -1,0 +1,40 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.2'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+//全局变量配置块
+ext{
+    separtor = java.io.File.separator
+    desktopPath = System.getProperty("user.home") + separtor + "Desktop" + separtor
+    compileSdkVersion = 25
+    buildToolsVersion = "25.0.1"
+    minSdkVersion = 11
+    targetSdkVersion = 25
+    RELEASE_REQUIRED_FILES_PATH = desktopPath + "copy-release.txt"
+    UNDO_RELEASE_FILES_PATH = desktopPath + "undo-release.txt"
+
+    DEBUG = "debug"
+    SIT = "sit"
+    RELEASE = "release"
+    buildConfig = RELEASE
+}
