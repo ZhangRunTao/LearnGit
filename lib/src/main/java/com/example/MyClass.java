@@ -23,6 +23,8 @@ public class MyClass {
 
         System.out.println(list.stream().findFirst().get());
         Objects.isNull(null);
+
+        System.out.println("say hello world for my git");
     }
 
     public interface Anim{
